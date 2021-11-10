@@ -35,23 +35,22 @@ public class Decoder {
         return -1;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         TreeMap<Integer, Integer> frequencies = new TreeMap<>();
 
         StringBuilder encoded = new StringBuilder();
 
         ArrayList<TreeNode> treeNodes = new ArrayList<>();
 
-        File file = new File("C:\\Users\\vovkv\\Desktop\\BWT\\compressed.huf");
+        File file = new File(args[0]);
 
         Integer index = loadFromFile(file, frequencies, encoded);
-        System.out.println(index);
 
         for(Integer c: frequencies.keySet()) {
             treeNodes.add(new TreeNode(c, frequencies.get(c)));
         }
 
-        Huffman.TreeNode tree = huffman(treeNodes);
+        TreeNode tree = huffman(treeNodes);
 
         // декодирование обратно исходной информации из сжатой
         ArrayList<Integer> decoded3 = decode(encoded.toString(), tree);
@@ -60,9 +59,9 @@ public class Decoder {
 
         String ib = ibwt(decode, index);
 
-        System.out.println(ib);
+        String currentPath = new File(".").getCanonicalPath();
 
-        try(FileOutputStream writer = new FileOutputStream("C:\\Users\\vovkv\\Desktop\\BWT\\decompressed.txt", false))
+        try(FileOutputStream writer = new FileOutputStream(args[1], false))
         {
             byte[] toWrite = ib.getBytes(StandardCharsets.ISO_8859_1);
             writer.write(toWrite);

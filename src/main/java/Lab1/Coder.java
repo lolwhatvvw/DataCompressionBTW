@@ -1,17 +1,18 @@
 package Lab1;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
 import static Lab1.Huffman.*;
-import static Lab1.MTF.*;
-import static Lab1.NBWT.*;
-
+import static Lab1.MTF.mtfEncode;
+import static Lab1.NBWT.BWT;
+import static Lab1.NBWT.bwt;
 
 public class Coder {
-
 
     private static void saveToFile(File output, int index, TreeMap<Integer, Integer> frequencies, String bits) {
         try {
@@ -40,8 +41,11 @@ public class Coder {
 
     public static void main(String[] args) {
 
+        Path p = Paths.get(args[0]);
+
         StringBuilder content = new StringBuilder();
-        try(FileInputStream reader = new FileInputStream(args[0]))
+
+        try(FileInputStream reader = new FileInputStream(String.valueOf(p)))
         {
             int c;
             while((c= reader.read())!=-1){
@@ -52,19 +56,17 @@ public class Coder {
             System.out.println(ex.getMessage());
         }
 
-        NBWT.BWT bwt = bwt(content.toString());
+        BWT bwt = bwt(content.toString());
 
         List<Integer> ls = new ArrayList<>(mtfEncode(bwt.res));
 
-        System.out.println(ls.size());
-
         TreeMap<Integer, Integer> frequancies = frequancy(ls);
-        ArrayList<Huffman.TreeNode> treeNodes = new ArrayList<>();
+        ArrayList<TreeNode> treeNodes = new ArrayList<>();
         for(Integer c: frequancies.keySet()){
-            treeNodes.add(new Huffman.TreeNode(c, frequancies.get(c)));
+            treeNodes.add(new TreeNode(c, frequancies.get(c)));
         }
 
-        Huffman.TreeNode tree = huffman(treeNodes);
+        TreeNode tree = huffman(treeNodes);
 
         TreeMap<Integer, String> codes = new TreeMap<>();
         for(Integer c: frequancies.keySet()){
@@ -72,18 +74,10 @@ public class Coder {
         }
         String encoded = encode(codes, ls);
 
-        System.out.println(encoded.length());
 
-        ArrayList<Integer> decoded = decode(encoded, tree);
 
-        String beforebwt = unmtf(decoded);
-        String fil = ibwt(beforebwt, bwt.index);
+        File file = new File(args[1]);
 
-        System.out.println(fil);
-
-        File file = new File("C:\\Users\\vovkv\\Desktop\\BWT\\compressed.huf");
-
-        saveToFile(file, bwt.index, frequancies, encoded );
+        saveToFile(file, bwt.index, frequancies, encoded);
     }
-
 }
