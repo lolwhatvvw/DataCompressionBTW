@@ -74,29 +74,44 @@ public class Coder {
         return res;
     }
 
-    public static TreeMap<Map<Byte, Byte>, Double> calc_2l(String s){
+    public static HashMap<Map<Byte, Byte>, Double> calc_2l(String s){
         byte[] b = s.getBytes(StandardCharsets.ISO_8859_1);
-        TreeMap<Map<Byte, Byte>, Double> tm = new TreeMap<>();
+        HashMap<Map<Byte, Byte>, Double> tm = new HashMap<>();
         for(int i = 1 ; i< b.length; i++){
-            Map <Byte, Byte> tmp = new HashMap<>(b[i-1],b[i]);
-            tm.put(tmp, tmp!= null? tm.get(tmp) + 1 :1);
+            int finalI = i;
+            Map <Byte, Byte> tmp = new HashMap<>() {{
+                put(b[finalI -1],b[finalI]);
+            }};
+            if ( tm.containsKey(tmp)){
+                tm.put(tmp, tm.get(tmp) + 1);
+            } else {
+                tm.put(tmp, 1D);
+            }
         }
         return tm;
     }
 
-    /*    TODO: Implement Map comparable to check contains*/
-    public static TreeMap<Map<Byte, Byte>, TreeMap<Byte, Double>> calc_2cnt (String s){
+    public static HashMap<Map<Byte, Byte>, HashMap<Byte, Double>> calc_2cnt (String s){
         byte[] b = s.getBytes(StandardCharsets.ISO_8859_1);
-        TreeMap<Map<Byte, Byte>, TreeMap<Byte, Double>> tm = new TreeMap<>();
+        HashMap<Map<Byte, Byte>, HashMap<Byte, Double>> tm = new HashMap<>();
         for (int i = 2; i < b.length; i++){
-            Map <Byte, Byte> pr = new HashMap<>(b[i-2],b[i-1]);
-            TreeMap<Byte, Double> mp ;
+            int finalI = i;
+            Map <Byte, Byte> pr = new HashMap<>() {{
+                put(b[finalI -2],b[finalI -1]);
+            }
+
+            };
+            HashMap<Byte, Double> mp ;
+
             if (tm.containsKey(pr)) {
                 mp = tm.get(pr);
-                Double tmp = mp != null? mp.get(b[i] + 1) : 1D;
-                mp.put(b[i], tmp);
+                if (mp.containsKey(b[i])){
+                    mp.put(b[i], mp.get(b[i]) + 1);
+                } else {
+                    mp.put(b[i], 1D);
+                }
             } else {
-                mp = new TreeMap<>();
+                mp = new HashMap<>();
                 mp.put(b[i], 1D);
             }
             tm.put(pr, mp);
@@ -113,7 +128,7 @@ public class Coder {
         return entropy_HX;
     }
 
-    public static double HIH(String s){
+    public static double entropy_HIH(String s){
         TreeMap<Byte, Double> letter1cnt = calc_letter(s);
         TreeMap<Byte, TreeMap<Byte, Double>> letter2cnt = calc_letter2(s);
         double entropy_HIH = 0;
@@ -129,9 +144,9 @@ public class Coder {
         return entropy_HIH;
     }
 
-    public static double calc_entropy_hXIXX(String s){
-        TreeMap<Map<Byte, Byte>, TreeMap<Byte, Double>> tmp = calc_2cnt(s);
-        TreeMap<Map<Byte, Byte>, Double> tp = calc_2l(s);
+    public static double entropy_hXIXX(String s){
+        HashMap<Map<Byte, Byte>, HashMap<Byte, Double>> tmp = calc_2cnt(s);
+        HashMap<Map<Byte, Byte>, Double> tp = calc_2l(s);
 
         double entropy_HXIXX = 0;
         for (Map.Entry<Map<Byte, Byte>, Double> e: tp.entrySet()){
@@ -148,7 +163,21 @@ public class Coder {
 
 
     public static void main(String[] args) {
+        Path p = Paths.get("C:\\Users\\vovkv\\Desktop\\BWT\\book2");
 
+        StringBuilder content = new StringBuilder();
+
+        try (FileInputStream reader = new FileInputStream(String.valueOf(p))) {
+            int c;
+            while ((c = reader.read()) != -1) {
+                content.append((char) c);
+            }
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+        System.out.println(entropy_HX(content.toString()));
+        System.out.println(entropy_HIH(content.toString()));
+        System.out.println(entropy_hXIXX(content.toString()));
 
 
     }
